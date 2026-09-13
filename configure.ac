@@ -9,15 +9,13 @@ AM_MAINTAINER_MODE
 dnl Checks for standard programs.
 dnl Autoconf was designed with the fundamental fact that compiler (= language support) is NOT an option.
 AC_PROG_FC
+AC_PROG_F77
 AC_PROG_CC
 AC_PROG_CXX
 PKG_PROG_PKG_CONFIG
 
-dnl Check for BLAS libraries
-AX_BLAS([], [AC_MSG_ERROR([cannot find BLAS libraries])])
-
-dnl Check for LAPACK libraries
-AX_LAPACK([], [AC_MSG_ERROR([cannot find LAPACK libraries])])
+dnl Detect Fortran name mangling rules early on
+AC_F77_WRAPPERS
 
 AC_ARG_VAR(INTERFACE64, [set to 1 to use the 64-bit integer interface (ILP64) for ARPACK, BLAS and LAPACK])
 if test x"$INTERFACE64" = x"1"; then
@@ -284,6 +282,12 @@ else
   dnl Needed for BLAS check and for tests (even when suffix is empty)
   CPPFLAGS="$CPPFLAGS -Dsnaupd=$snaupdsuff -Dsneupd=$sneupdsuff -Ddnaupd=$dnaupdsuff -Ddneupd=$dneupdsuff"
 fi
+
+dnl Check for BLAS libraries (with symbol suffix as appropriate)
+AX_BLAS([], [AC_MSG_ERROR([cannot find BLAS libraries])])
+
+dnl Check for LAPACK libraries (with symbol suffix as appropriate)
+AX_LAPACK([], [AC_MSG_ERROR([cannot find LAPACK libraries])])
 
 dnl As BLAS/LAPACK does not provide ICB, we may have to deal with symbols the old-fashion-boring-cumbersome-fortran/C way...
 
