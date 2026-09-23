@@ -253,6 +253,23 @@ Please, read the documentation of the respective CMake modules for more informat
 * [FindPythonLibs](https://cmake.org/cmake/help/latest/module/FindPythonLibs.html) (for Python3 bindings)
 * [FindBoost](https://cmake.org/cmake/help/latest/module/FindBoost.html) (for Python3 bindings)
 
+CMake's `find_package` mechanism may use 2 modes:
+- Module mode (Find<PackageName>.cmake): an outside party (e.g. CMake itself) writes a script to
+  search for an external dependency on the disk. This mode is fragile and rely on setting
+  CMAKE_MODULE_PATH, CMAKE_PREFIX_PATH and <PackageName>_ROOT to find each dependency.
+- Config mode (<PackageName>Config.cmake or <lowercase-package>-config.cmake): the library author
+  builds and installs a set of files that explicitly describe how to consume the library. This mode
+  is the one to prefer when possible and rely on setting CMAKE_PREFIX_PATH, <PackageName>_ROOT and
+  <PackageName>_DIR to find each dependency.
+
+For each dependency, if `find_package` doesn't work (because you use non-standard installation path
+or your environment is not set correctly), make sure your environment has been set correctly (e.g.
+using module-load) and/or set these variables by hand:
+- CMAKE_MODULE_PATH
+- CMAKE_PREFIX_PATH
+- <PackageName>_ROOT
+- <PackageName>_DIR
+
 ✨ Congratulations, you have installed `arpack` lib using CMake.
 (Caution: You might need `sudo` to install on your system.)
 
