@@ -91,8 +91,13 @@ if (PYTHON3)
 endif ()
 
 if (EIGEN)
-    find_package(Eigen3 3.3 QUIET)
-    if (NOT TARGET Eigen3::Eigen)
+    find_package(Eigen3 3.3...5 QUIET)
+    if (TARGET Eigen3::Eigen)
+        if (NOT EIGEN3_INCLUDE_DIR)
+            # Newer versions of Eigen3 do not import this variable
+            get_target_property(EIGEN3_INCLUDE_DIR Eigen3::Eigen INTERFACE_INCLUDE_DIRECTORIES)
+        endif ()
+    else ()
         # If not found, piggy-back pkg-config files.
         message(WARNING "CMake didn't find the Eigen3 package. Try to look for pkg-config file...")
         find_package(PkgConfig REQUIRED)
