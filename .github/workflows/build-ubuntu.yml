@@ -107,6 +107,7 @@ jobs:
             tests: with
             install: without
             blas: BLAS
+            compiler-wrappers: without
             configure-flags: >-
               --enable-mpi
               --enable-icb
@@ -116,8 +117,8 @@ jobs:
               MPICC=gcc
               MPICXX=g++
               MPI_CPPFLAGS="$(mpifort -showme:compile)"
-              MPI_LDFLAGS="$(echo "$(mpicc -showme:link) $(mpicxx -showme:link) $(mpifort -showme:link)" | sed -E 's/(^|[[:space:]])-l[^[:space:]]*//g' | xargs)"
-              MPILIBS="$(echo "$(mpicc -showme:link) $(mpicxx -showme:link) $(mpifort -showme:link)" | tr ' ' '\n' | sed -n '/^-l/p' | xargs)"
+              MPI_LDFLAGS="${MPI_LINKER_FLAGS_WITHOUT_l}"
+              MPILIBS="${MPI_LINKER_FLAGS_ONLY_l}"
           - name: Ubuntu autotools using MKL
             tests: with
             install: without
@@ -229,6 +230,16 @@ jobs:
         with:
           path: ${{ github.workspace }}/openmpi
           key: ${{ steps.openmpi-cache.outputs.cache-primary-key }}
+      - name: Get linker flags from MPI wrappers
+        if: matrix.compiler-wrappers == 'without'
+        run: |
+          # Get MPI linker flags for all languages that are used in PARPACK
+          # including its tests and examples.
+          _all_mpi_linker_flags="$(mpicc -showme:link) $(mpicxx -showme:link) $(mpifort -showme:link)"
+          # For libtool, the linker flags need to be separated into ones that
+          # begin with `-l` and ones that do not.
+          echo "MPI_LINKER_FLAGS_WITHOUT_l=$(echo "${_all_mpi_linker_flags}" | sed -E 's/(^|[[:space:]])-l[^[:space:]]*//g' | xargs)" >> $GITHUB_ENV
+          echo "MPI_LINKER_FLAGS_ONLY_l=$(echo "${_all_mpi_linker_flags}" | tr ' ' '\n' | sed -n '/^-l/p' | xargs)" >> $GITHUB_ENV
       - name: Configure
         run: |
           ./bootstrap
